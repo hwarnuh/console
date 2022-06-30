@@ -207,18 +207,21 @@ func (s *Service) consumeKafkaMessages(ctx context.Context, client *kgo.Client, 
 
 				idps, err := gosdk.CreateIDPSClient(idpsppty)
 				if err != nil {
-					fmt.Println(Errorf("create IDPS client failed: %w", err))
+					fmt.Println(err)
 				}
 
 				kt, err2 := gosdk.NewKafkaTopicConfig(topic, "", 1, idps, "qa", "test-gosdk-cli-consumer", "testdata/testcerts/Eventbus_CA_CertChain.pem")
 				// clientID string, CertChain file, and CertChain path are currently placeholders
 				if err2 != nil {
-					fmt.Println(Errorf("config new kt failed: %w", err))
+					fmt.Println(err2)
 				}
 			
 				payload := string(record.Value)
 				strMsgDecoder := gosdk.NewStringMessageDecoder(payload, kt)
 				decrypted, err3 := strMsgDecoder.Decode()
+				if err3 != nil {
+					fmt.Println(err3)
+				}
 
 				record.Value = []byte(decrypted)
 				select {
