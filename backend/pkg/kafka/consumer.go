@@ -19,6 +19,8 @@ import (
 	"github.com/redpanda-data/console/backend/pkg/interpreter"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"go.uber.org/zap"
+	
+	gosdk "github.intuit.com/data-eventbus/go-sdk"
 )
 
 // IListMessagesProgress specifies the methods 'ListMessages' will call on your progress-object.
