@@ -188,6 +188,13 @@ func (s *Service) consumeKafkaMessages(ctx context.Context, client *kgo.Client, 
 			}
 			iter := fetches.RecordIter()
 
+			var idpsppty = map[string]string{
+				"api_endpoint":   "kafkainfra-pre-production-l10maf.pd.idps.a.intuit.com",
+				"api_key_id":     "v2-e3b373bd2284e", 
+				"api_secret_key": "/Users/hwarner/working-dir/console/backend/pkg/kafka/testdata/testcerts/key_v2-e3b373bd2284e.pem", 
+			}
+			idps, err := gosdk.CreateIDPSClient(idpsppty)
+
 			// Iterate on all messages from this poll
 			for !iter.Done() {
 				record := iter.Next()
@@ -200,31 +207,17 @@ func (s *Service) consumeKafkaMessages(ctx context.Context, client *kgo.Client, 
 				}
 
 				// Avoid a deadlock in case the jobs channel is full
-				var topic = record.Topic
-				var idpsppty = map[string]string{
-					"api_endpoint":   "eventbus-local.pl-data-lake-qa.a.intuit.com",
-					"api_key_id":     "v2-e3b373bd2284e", 
-					"api_secret_key": "testdata/testcerts/key_v2-e3b373bd2284e.pem", 
-				}
-
-				idps, err := gosdk.CreateIDPSClient(idpsppty)
-				if err != nil {
-					fmt.Println(err)
-				}
-
-				kt, err2 := gosdk.NewKafkaTopicConfig(topic, "", 1, idps, "qa", "", "testdata/testcerts/Eventbus_CA_CertChain.pem")
-				if err2 != nil {
-					fmt.Println(err2)
-				}
+				topic := record.Topic
+				kt, err2 := gosdk.NewKafkaTopicConfig(topic, "", 1, idps, "qa", "", "/Users/hwarner/working-dir/console/backend/pkg/kafka/testdata/testcerts/Eventbus_CA_CertChain.pem")
 			
 				payload := record.Value
 				strMsgDecoder := gosdk.NewStringMessageDecoder(payload, kt)
 				decrypted, err3 := strMsgDecoder.Decode()
-				if err3 != nil {
-					fmt.Println(err3)
+
+				if err == nil && err2 == nil && err3 == nil {
+					record.Value = []byte(decrypted)
 				}
 
-				record.Value = []byte(decrypted)
 				select {
 				case <-ctx.Done():
 					return
