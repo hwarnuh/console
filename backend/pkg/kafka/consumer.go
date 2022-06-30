@@ -203,8 +203,8 @@ func (s *Service) consumeKafkaMessages(ctx context.Context, client *kgo.Client, 
 				var topic = record.Topic
 				var idpsppty = map[string]string{
 					"api_endpoint":   "eventbus-local.pl-data-lake-qa.a.intuit.com",
-					"api_key_id":     "v2-e3b373bd2284e", // placeholder
-					"api_secret_key": "key_v2-e3b373bd2284e.pem", // placeholder
+					"api_key_id":     "v2-e3b373bd2284e", 
+					"api_secret_key": "testdata/testcerts/key_v2-e3b373bd2284e.pem", 
 				}
 
 				idps, err := gosdk.CreateIDPSClient(idpsppty)
@@ -212,8 +212,7 @@ func (s *Service) consumeKafkaMessages(ctx context.Context, client *kgo.Client, 
 					fmt.Println(err)
 				}
 
-				kt, err2 := gosdk.NewKafkaTopicConfig(topic, "", 1, idps, "qa", "test-gosdk-cli-consumer", "testdata/testcerts/Eventbus_CA_CertChain.pem")
-				// clientID string, CertChain file, and CertChain path are currently placeholders
+				kt, err2 := gosdk.NewKafkaTopicConfig(topic, "", 1, idps, "qa", "", "testdata/testcerts/Eventbus_CA_CertChain.pem")
 				if err2 != nil {
 					fmt.Println(err2)
 				}
