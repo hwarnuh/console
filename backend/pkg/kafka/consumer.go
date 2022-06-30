@@ -198,7 +198,7 @@ func (s *Service) consumeKafkaMessages(ctx context.Context, client *kgo.Client, 
 				}
 
 				// Avoid a deadlock in case the jobs channel is full
-				var topic = "simple-form-events" // placeholder
+				var topic = consumeReq.TopicName
 				var idpsppty = map[string]string{
 					"api_endpoint":   "eventbus-local.pl-data-lake-qa.a.intuit.com",
 					"api_key_id":     "v2-e3b373bd2284e", // placeholder
