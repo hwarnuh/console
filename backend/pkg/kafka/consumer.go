@@ -198,6 +198,29 @@ func (s *Service) consumeKafkaMessages(ctx context.Context, client *kgo.Client, 
 				}
 
 				// Avoid a deadlock in case the jobs channel is full
+				var topic = "simple-form-events" // placeholder
+				var idpsppty = map[string]string{
+					"api_endpoint":   "eventbus-local.pl-data-lake-qa.a.intuit.com",
+					"api_key_id":     "v2-e3b373bd2284e", // placeholder
+					"api_secret_key": "key_v2-e3b373bd2284e.pem", // placeholder
+				}
+
+				idps, err := gosdk.CreateIDPSClient(idpsppty)
+				if err != nil {
+					return fmt.Errorf("create IDPS client failed: %w", err)
+				}
+
+				kt, err2 := gosdk.NewKafkaTopicConfig(topic, "", 1, idps, "qa", "test-gosdk-cli-consumer", "testdata/testcerts/Eventbus_CA_CertChain.pem")
+				// clientID string, CertChain file, and CertChain path are currently placeholders
+				if err2 != nil {
+					return fmt.Errorf("config new kt failed: %w", err)
+				}
+			
+				payload := string(record.Value)
+				strMsgDecoder := gosdk.NewStringMessageDecoder(payload, kt)
+				decrypted, err3 := strMsgDecoder.Decode()
+
+				record.Value = []byte(decrypted)
 				select {
 				case <-ctx.Done():
 					return
