@@ -218,7 +218,7 @@ func (s *Service) consumeKafkaMessages(ctx context.Context, client *kgo.Client, 
 					fmt.Println(err2)
 				}
 			
-				payload := string(record.Value)
+				payload := record.Value
 				strMsgDecoder := gosdk.NewStringMessageDecoder(payload, kt)
 				decrypted, err3 := strMsgDecoder.Decode()
 				if err3 != nil {
