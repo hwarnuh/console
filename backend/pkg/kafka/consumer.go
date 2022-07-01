@@ -188,6 +188,7 @@ func (s *Service) consumeKafkaMessages(ctx context.Context, client *kgo.Client, 
 			}
 			iter := fetches.RecordIter()
 
+			// Define IDPS properties to create IDPS client
 			var idpsppty = map[string]string{
 				"api_endpoint":   "kafkainfra-pre-production-l10maf.pd.idps.a.intuit.com",
 				"api_key_id":     "v2-e3b373bd2284e", 
@@ -205,19 +206,21 @@ func (s *Service) consumeKafkaMessages(ctx context.Context, client *kgo.Client, 
 					// equal distribution across the partitions
 					continue
 				}
-
-				// Avoid a deadlock in case the jobs channel is full
+				
 				topic := record.Topic
 				kt, err2 := gosdk.NewKafkaTopicConfig(topic, "", 1, idps, "qa", "", "/Users/hwarner/working-dir/console/backend/pkg/kafka/testdata/testcerts/Eventbus_CA_CertChain.pem")
 			
+				// Build StringMessageDecoder and run GCM key decryption on payload
 				payload := record.Value
 				strMsgDecoder := gosdk.NewStringMessageDecoder(payload, kt)
 				decrypted, err3 := strMsgDecoder.Decode()
 
+				// Redefine record value with decrypted message if no errors are raised
 				if err == nil && err2 == nil && err3 == nil {
 					record.Value = []byte(decrypted)
 				}
 
+				// Avoid a deadlock in case the jobs channel is full
 				select {
 				case <-ctx.Done():
 					return
