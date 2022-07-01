@@ -194,7 +194,7 @@ func (s *Service) consumeKafkaMessages(ctx context.Context, client *kgo.Client, 
 				"api_key_id":     "v2-e3b373bd2284e", 
 				"api_secret_key": "/Users/hwarner/working-dir/console/backend/pkg/kafka/testdata/testcerts/key_v2-e3b373bd2284e.pem", 
 			}
-			idps, err := gosdk.CreateIDPSClient(idpsppty)
+			idps, err1 := gosdk.CreateIDPSClient(idpsppty)
 
 			// Iterate on all messages from this poll
 			for !iter.Done() {
@@ -218,6 +218,13 @@ func (s *Service) consumeKafkaMessages(ctx context.Context, client *kgo.Client, 
 				// Redefine record value with decrypted message if no errors are raised
 				if err == nil && err2 == nil && err3 == nil {
 					record.Value = []byte(decrypted)
+				} else {
+					errors := []error{err1, err2, err3}
+					for i := range errors {
+						if errors[i] != nil {
+							fmt.Printf("\n Error: %s", errors[i])
+						}
+					}
 				}
 
 				// Avoid a deadlock in case the jobs channel is full
